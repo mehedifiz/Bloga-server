@@ -45,7 +45,14 @@ async function run() {
           const result =  await allBlogCollection.findOne(query)
           res.send(result)
       })
-
+      app.post('/allBloges' , async(req ,res)=>{
+        const blogs = req.body;
+        console.log(blogs)
+  
+        const result = await allBlogCollection.insertOne(blogs)
+        res.send(result)
+  
+      })
 
 
 
