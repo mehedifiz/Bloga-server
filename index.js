@@ -1,22 +1,19 @@
 const express = require('express');
-// const cors = require('cors');
-const app = express();
-const cors = require('cors')
-const port = process.env.PORT || 4000;
+const cors = require('cors');
 
-app.use(express.json())
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+
+const app = express();
+const port = process.env.PORT || 4000;
+const uri = "mongodb://localhost:27017";
+
+// Middleware
+app.use(express.json());
 app.use(cors());
 
 
-app.get('/', (req ,res)=>{
-    res.send('server is running')
-})
 
-
-const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-const uri = "mongodb://localhost:27017";
-
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
+// MongoDB client setup
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -27,38 +24,53 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    // Connect the client to the server	(optional starting in v4.7)
+    // Connect the client to the server
     await client.connect();
 
-        const allBlogCollection = client.db('Bolgaa').collection('allBloges')
+    const allBlogCollection = client.db('Bolgaa').collection('allBloges');
 
+    // Endpoints
+    app.get('/', (req, res) => {
+      res.send('server is running');
+    });
 
+    app.get('/allBloges', async (req, res) => {
+      const result = await allBlogCollection.find().toArray();
+      res.send(result);
+    });
 
-        app.get('/allBloges' , async(req , res)=>{
-            const cursor = await allBlogCollection.find().toArray()
-            res.send(cursor)
-        })
-        
-        app.get('/allBloges/:id', async(req , res)=>{
-          const id = req.params.id;
-          const query = {_id : new ObjectId(id)}
-          const result =  await allBlogCollection.findOne(query)
-          res.send(result)
-      })
-      app.post('/allBloges' , async(req ,res)=>{
-        const blogs = req.body;
-        console.log(blogs)
-  
-        const result = await allBlogCollection.insertOne(blogs)
-        res.send(result)
-  
-      })
+   
+    app.get('/allBloges/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await allBlogCollection.findOne(query);
+      res.send(result);
+    });
 
+    
+    app.post('/allBloges', async (req, res) => {
+      const blogs = req.body;
+      const result = await allBlogCollection.insertOne(blogs);
+      res.send(result);
+    });
 
+    
+    app.get('/blogsByEmail', async (req, res) => {
+      const email = req.query.email;
+      let query ={}
+      if (!email) {
+        return res.status(400).send({ message: "Email query parameter is required" });
+      }
+      if(email)
+     {
+       query = {email : email}
+      }
+      console.log(query)
+      const result = await allBlogCollection.find(query).toArray();
+      res.send(result);
+    });
 
-
-
-    // Send a ping to confirm a successful connection
+    // Confirm successful connection to MongoDB
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
@@ -69,8 +81,6 @@ async function run() {
 run().catch(console.dir);
 
 
-
-
-app.listen(port , ()=>{
-    console.log(`server : ${port} `)
-})
+app.listen(port, () => {
+  console.log(`server is running on port ${port}`);
+});
