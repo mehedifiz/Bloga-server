@@ -9,7 +9,10 @@ const uri = "mongodb://localhost:27017";
 
 // Middleware
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:5173"
+}
+));
 
 
 
@@ -69,6 +72,19 @@ async function run() {
       const result = await allBlogCollection.find(query).toArray();
       res.send(result);
     });
+
+
+
+      //delete
+    app.delete('/blogsByEmail/:id' , async(req ,res)=>{
+    const id = new ObjectId(req.params.id)
+    const query = {_id : id}
+    const result = await allBlogCollection.deleteOne(query)
+    res.send(result)
+
+    }
+    )
+
 
     // Confirm successful connection to MongoDB
     await client.db("admin").command({ ping: 1 });
