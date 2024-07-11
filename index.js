@@ -83,7 +83,36 @@ async function run() {
     res.send(result)
 
     }
-    )
+    ) 
+
+
+    //update 
+    app.put('/blogsByEmail/:id' , async(req , res)=>{
+
+      const id = req.params.id;
+      const query  = {_id : new ObjectId(id)}
+      const options ={upsert : true};
+      const oldBlog = req.body;
+      console.log(oldBlog)
+      console.log(id)
+      const updatedBlog = req.body;
+
+      const updatedted ={
+        $set:{
+          title : updatedBlog.title ,
+           category : updatedBlog.category ,
+            image : updatedBlog.image ,
+            author : updatedBlog.author , 
+            date : updatedBlog.date , 
+            content : updatedBlog.content , 
+          
+        }
+      }
+      const result = await allBlogCollection.updateOne(query , updatedted , options)
+res.send(result)
+
+    })
+    
 
 
     // Confirm successful connection to MongoDB
