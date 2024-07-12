@@ -117,10 +117,14 @@ async function run() {
       if (!email) {
         return res.status(400).send({ message: "Email query parameter is required" });
       }
+      if(email !== req.user.email){
+        return res.status(403).send({message: 'forbidden'})
+      }
       if(email)
      {
        query = {email : email}
       }
+
       console.log(query)
       const result = await allBlogCollection.find(query).toArray();
       res.send(result);
