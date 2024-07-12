@@ -1,6 +1,9 @@
-const express = require('express');
+ const express = require('express');
 const cors = require('cors');
+require('dotenv').config();
 
+const jwt = require('jsonwebtoken')
+const  cookieParser = require('cookie-parser');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 const app = express();
@@ -9,11 +12,10 @@ const uri = "mongodb://localhost:27017";
 
 // Middleware
 app.use(express.json());
-app.use(cors({
-  origin: "http://localhost:5173"
-}
-));
+app.use(cors({ origin: 'http://localhost:5173',
+ credentials: true }));
 
+app.use(cookieParser())
 
 
 // MongoDB client setup
@@ -31,8 +33,27 @@ async function run() {
     await client.connect();
 
     const allBlogCollection = client.db('Bolgaa').collection('allBloges');
+    //auth Endpoints
 
-    // Endpoints
+      app.post('/jwt' , async(req , res)=>{
+        const user = req.body;
+        console.log(user)
+        const token = jwt.sign(user, process.env.ACCESS_TOKEN, { expiresIn: '9h' });
+
+   
+        res.cookie('token' , token ,{
+          httpOnly: true,
+          secure :false,
+          sameSite:'none'
+        
+        }).send({success : true}) 
+      })
+
+     
+
+
+
+    // services Endpoints
     app.get('/', (req, res) => {
       res.send('server is running');
     });
@@ -60,6 +81,9 @@ async function run() {
     
     app.get('/blogsByEmail', async (req, res) => {
       const email = req.query.email;
+    console.log('token :', req.cookies.token)
+
+
       let query ={}
       if (!email) {
         return res.status(400).send({ message: "Email query parameter is required" });
