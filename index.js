@@ -26,6 +26,15 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
+//own midderware
+
+const logger = async(req ,res ,next)=>{
+  console.log('called' ,req.host , req.originalUrl )
+
+  next()
+}
+
+
 
 async function run() {
   try {
@@ -35,7 +44,7 @@ async function run() {
     const allBlogCollection = client.db('Bolgaa').collection('allBloges');
     //auth Endpoints
 
-      app.post('/jwt' , async(req , res)=>{
+      app.post('/jwt' , logger , async(req , res)=>{
         const user = req.body;
         console.log(user)
         const token = jwt.sign(user, process.env.ACCESS_TOKEN, { expiresIn: '9h' });
@@ -49,7 +58,27 @@ async function run() {
         }).send({success : true}) 
       })
 
-     
+     const verifyToken = async(req , res , next)=>{
+        const token = req.cookies?.token;
+      console.log('value of token in middleware' , token)
+        if(!token){
+         return res.status(401).send({message: "forbidden"})
+        }
+        jwt.verify(token ,process.env.ACCESS_TOKEN , (err , decodeed)=>{
+
+          if(err){
+            return res.status(401).send({message:'unauth'})
+          }
+
+           console.log('deeecoded value tonkn' , decodeed)
+
+          req.user = decodeed;
+            next()
+        
+      }  )
+
+
+     }
 
 
 
@@ -79,9 +108,9 @@ async function run() {
     });
 
     
-    app.get('/blogsByEmail', async (req, res) => {
+    app.get('/blogsByEmail',logger,verifyToken, async (req, res) => {
       const email = req.query.email;
-    console.log('token :', req.cookies.token)
+    // console.log('token :', req.cookies.token)
 
 
       let query ={}
