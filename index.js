@@ -13,7 +13,7 @@ const uri =`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0
 // Middleware
 //theblogy
 app.use(express.json());
-app.use(cors({ origin: 'http://localhost:5173',
+app.use(cors({ origin: 'https://the-blogy.web.app',
  credentials: true }));
  
 app.use(cookieParser())
@@ -53,7 +53,7 @@ async function run() {
    
         res.cookie('token' , token ,{
           httpOnly: true,
-          secure :false,
+          secure :true,
           sameSite:'none'
         
         }).send({success : true}) 
