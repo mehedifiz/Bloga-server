@@ -8,13 +8,14 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 const app = express();
 const port = process.env.PORT || 4000;
-const uri = "mongodb://localhost:27017";
-
+const uri =`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.ensactw.mongodb.net/?appName=Cluster0`;
+ 
 // Middleware
+//theblogy
 app.use(express.json());
 app.use(cors({ origin: 'http://localhost:5173',
  credentials: true }));
-
+ 
 app.use(cookieParser())
 
 
